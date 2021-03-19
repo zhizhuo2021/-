@@ -1,7 +1,7 @@
 import {getSpec,specCount} from "../../utils/request";
 const state = {
     specList:[],
-    size:10, //每页显示两条
+    size:2, //每页显示两条
     page:1, //当前页码
     count:0, //商品规格总数
 }
@@ -52,6 +52,9 @@ const getters ={
     },
     count(state){
         return state.count
+    },
+    page(state){
+        return state.page
     }
 }
 

@@ -4,7 +4,7 @@
     <el-dialog :title="info.title" :visible.sync="info.show" @opened="opened">
       <el-form :model="form">
         <el-form-item label="一级分类" :label-width="formLabelWidth">
-          <el-select v-model="form.first_cateid" @change="changeCate">
+          <el-select v-model="form.first_cateid" @change="changeCate(false)">
             <el-option label="--请选择--" disabled value=""></el-option>
             <!-- 遍历分类列表 -->
             <el-option v-for="item in cateList" :key="item.id" :label="item.catename" :value="item.id"></el-option>
@@ -37,7 +37,7 @@
         </el-form-item>
               <el-form-item label="商品规格" :label-width="formLabelWidth">
           <!-- 后端接口上级菜单参数pid -->
-          <el-select v-model="form.specsid" @change="changeSpec">
+          <el-select v-model="form.specsid" @change="changeSpec(false)">
             <el-option label="--请选择--" disabled value=""></el-option>
             <!-- 遍历分类列表 -->
             <el-option v-for="item in specList" :key="item.id" :label="item.specsname" :value="item.id"></el-option>
@@ -88,7 +88,8 @@
 
 <script>
 import {mapGetters,mapActions } from 'vuex';
-import { warningAlert } from '../../../utils/alert';
+import { successAlert, warningAlert } from '../../../utils/alert';
+import {addGoods,oneGoods,updateGoods} from '../../../utils/request'
 import E from 'wangeditor'
 export default {
     props:['info'],
@@ -98,6 +99,7 @@ export default {
              formLabelWidth:'120px',
              seconedCate:[],//获取二级分类列表
              seconedSpec:[],
+             editor:'',//存放富文本内容
              form:{
                  first_cateid:'',
                  second_cateid:'',
@@ -124,22 +126,30 @@ export default {
      methods:{
          ...mapActions({
              "requestCateList":"cate/cateListActions",
-             "requestSpecList":"spec/specListActions"
+             "requestSpecList":"spec/specListActions",
+             "requestCount":"goods/countActions",
+             "requestGoodsList":"goods/goodsListActions"
          }),
         //  对话框打开结束之后的回调
          opened(){
-             
-         const editor = new E('#div1')
-         editor.create()
+              this.editor = new E('#div1')
+              this.editor.create()
+              this.editor.txt.html(this.form.description)
          },
         //  改变一级分类时获取二级分类
-         changeCate(){
-             this.form.second_cateid= '';
+         changeCate(bool){
+           if(!bool){
+                this.form.second_cateid= '';
+           }
+             
             var index =  this.cateList.findIndex(item=>item.id==this.form.first_cateid)
            this.seconedCate = this.cateList[index].children
          },
-         changeSpec(){
-             this.form.specsattr = '';
+         changeSpec(bool){
+           if(!bool){
+                this.form.specsattr = '';
+           }
+            
              var index = this.specList.findIndex(item=>item.id==this.form.specsid)
              this.seconedSpec = this.specList[index].attrs;
          },
@@ -165,6 +175,57 @@ export default {
             // 将图片信息存入this.form.img中
             this.form.img = file;
 
+         },
+         cancel(){
+          //  隐藏添加商品管理
+           this.info.show = false;
+          //  form表单内容清空
+           this.form = {
+              first_cateid:'',
+                 second_cateid:'',
+                 goodsname:'',
+                 price:'',
+                 market_price:"",
+                 img:'',
+                 description:'',
+                 specsid:'',
+                 specsattr:[],
+                 isnew:1,
+                 ishot:1,
+                 status:1,
+           }
+          //  img图片地址清空
+           this.imageUrl = '';
+         },
+         confirm(){
+          //  需要处理一下描述信息
+          this.form.description = this.editor.txt.html();
+           addGoods(this.form).then(res=>{
+             successAlert(res.data.msg);
+             this.cancel();
+             this.requestCount();
+             this.requestGoodsList();
+           })
+         },
+         getDetail(id){
+           oneGoods({id}).then(res=>{
+             this.form = res.data.list;
+             this.form.id = id;
+            //  获取二级分类的详情
+            this.changeCate(true)
+             this.imageUrl = this.$preImg + this.form.img;
+            //  获取规格属性
+            this.changeSpec(true)
+            this.form.specsattr = this.form.specsattr.split(',')
+           })
+         },
+         update(){
+           this.form.description = this.editor.txt.html();
+           updateGoods(this.form).then(res=>{
+               successAlert(res.data.msg);
+              this.cancel();
+               this.requestGoodsList();
+           })
          } 
      },
    

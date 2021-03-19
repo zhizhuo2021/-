@@ -29,7 +29,7 @@
     <el-pagination
   background
   layout="prev, pager, next"
-  :page-size="10"
+  :page-size="page"
   @current-change='cpage'
   :total="count">
 </el-pagination>
@@ -44,7 +44,8 @@ export default {
     computed:{
         ...mapGetters({
             "specData":"spec/specList",
-            "count":"spec/count"
+            "count":"spec/count",
+            "page":"spec/page"
         })
     },
     methods:{

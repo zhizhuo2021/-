@@ -9,6 +9,7 @@ import role from './modules/role'
 import manager from './modules/manager'
 import cate from './modules/cate'
 import spec from './modules/spec'
+import goods from './modules/goods'
 
 const store = new Vuex.Store({
     state,//存储数据
@@ -21,6 +22,8 @@ const store = new Vuex.Store({
         manager,
         cate,
         spec,
+        goods,
+        
 
     }
 })

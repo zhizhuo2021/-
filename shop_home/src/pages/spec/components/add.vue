@@ -58,7 +58,9 @@ export default {
 
         ...mapActions({
             "requestCount":"spec/countActions",
-            "requestSpecList":"spec/specListActions"
+            "requestSpecList":"spec/specListActions",
+            
+            
         }),
         // 添加规格属性
         addAttr(){
